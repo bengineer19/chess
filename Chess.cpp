@@ -25,6 +25,7 @@ Chess::Chess(){
     for(detectionInput = 38; detectionInput < 46; detectionInput++){
         pinMode(detectionInput, INPUT);
     }
+    readBoardToArray();
 }
 
 void Chess::flashStartingRows(){
@@ -222,12 +223,21 @@ void Chess::printBoardState(){
     Serial.println();
 }
 
-bool Chess::pieceHasBeenMoved(){
+void Chess::waitForMove(){
+    while(!pieceHasBeenLifted()){}
+        delay(250);
+    while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
+}
+
+bool Chess::pieceHasBeenLifted(){
     for (int y = 0; y < 8; y++)
     {
         for (int x = 0; x < 8; x++)
         {
             if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
+                liftedPiece[0] = x;
+                liftedPiece[1] = y;
+                readBoardToArray();
                 return true;
             }
         }
@@ -235,3 +245,35 @@ bool Chess::pieceHasBeenMoved(){
     return false;
 }
 
+bool Chess::pieceHasBeenPlaced(){
+    for (int y = 0; y < 8; y++)
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            if(boardState[y][x] == false && pieceIsPresent(x,y)){
+                placedPiece[0] = x;
+                placedPiece[1] = y;
+                readBoardToArray();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Chess::pieceHasBeenCaptured(){
+    for (int y = 0; y < 8; y++)
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
+                readBoardToArray();
+                while(!pieceHasBeenPlaced()){}
+                //Depends on whether the user lifted the capturing or captured piece first
+                readBoardToArray();
+                return true;
+            }
+        }
+    }
+    return false;
+}
