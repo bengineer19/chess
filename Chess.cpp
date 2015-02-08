@@ -209,3 +209,29 @@ void Chess::readBoardToArray(){
     }
 }
 
+void Chess::printBoardState(){
+    for (int y = 0; y < 8; y++)
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            Serial.print(boardState[y][x]);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
+    Serial.println();
+}
+
+bool Chess::pieceHasBeenMoved(){
+    for (int y = 0; y < 8; y++)
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
