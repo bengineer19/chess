@@ -16,6 +16,8 @@ class Chess{
 
         void movePiece(int piece[2], int square[2]);
         void readBoardToArray();
+        void printBoardState();
+        bool pieceHasBeenMoved();
     private:
         int activeRow, activeSquareLEDCol, activePieceLEDCol;
         int detection5v, detectionInput;
