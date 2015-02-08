@@ -7,6 +7,8 @@ class Chess{
     public:
         Chess();
         bool boardState [8][8];
+        int liftedPiece[2];
+        int placedPiece[2];
 
         void pieceLEDs();
         void pieceLEDsStarting();
@@ -17,7 +19,10 @@ class Chess{
         void movePiece(int piece[2], int square[2]);
         void readBoardToArray();
         void printBoardState();
-        bool pieceHasBeenMoved();
+        void waitForMove();
+        bool pieceHasBeenLifted();
+        bool pieceHasBeenPlaced();
+        bool pieceHasBeenCaptured();
     private:
         int activeRow, activeSquareLEDCol, activePieceLEDCol;
         int detection5v, detectionInput;
