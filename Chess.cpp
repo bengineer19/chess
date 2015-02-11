@@ -196,9 +196,9 @@ bool Chess::pieceIsPresent(int column, int row){
 }
 
 void Chess::readBoardToArray(){
-    for (int y = 0; y < 8; y++)
+    for (int x = 0; x < 8; x++)
     {
-        for (int x = 0; x < 8; x++)
+        for (int y = 0; y < 8; y++)
         {
             if(pieceIsPresent(x, y)){
                 boardState[y][x] = true;
@@ -224,19 +224,33 @@ void Chess::printBoardState(){
 }
 
 void Chess::waitForMove(){
+    //To prevent LED Gnds shorting with detection lines and ghosting pieces
+    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
+        pinMode(LEDGnd, OUTPUT);
+        digitalWrite(LEDGnd, LOW);
+    }
+
     while(!pieceHasBeenLifted()){}
-        delay(250);
+    //while(!pieceHasBeenPlaced()){}
     while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
+
+    //Turn LED Gnds back on
+    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
+        pinMode(LEDGnd, OUTPUT);
+        digitalWrite(LEDGnd, HIGH);
+    }
 }
 
 bool Chess::pieceHasBeenLifted(){
-    for (int y = 0; y < 8; y++)
+    for (int x = 0; x < 8; x++)
     {
-        for (int x = 0; x < 8; x++)
+        for (int y = 0; y < 8; y++)
         {
             if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
                 liftedPiece[0] = x;
                 liftedPiece[1] = y;
+                //Serial.println("lifted");
+                delay(1250);
                 readBoardToArray();
                 return true;
             }
@@ -246,13 +260,14 @@ bool Chess::pieceHasBeenLifted(){
 }
 
 bool Chess::pieceHasBeenPlaced(){
-    for (int y = 0; y < 8; y++)
+    for (int x = 0; x < 8; x++)
     {
-        for (int x = 0; x < 8; x++)
+        for (int y = 0; y < 8; y++)
         {
             if(boardState[y][x] == false && pieceIsPresent(x,y)){
                 placedPiece[0] = x;
                 placedPiece[1] = y;
+                delay(1250);
                 readBoardToArray();
                 return true;
             }
