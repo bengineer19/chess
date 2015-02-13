@@ -257,7 +257,7 @@ bool Chess::pieceHasBeenLifted(){
                 liftedPiece[0] = x;
                 liftedPiece[1] = y;
                 //Serial.println("lifted");
-                delay(650);
+                delay(500);
                 readBoardToArray();
                 return true;
             }
@@ -296,14 +296,14 @@ bool Chess::liftedOrCaptured(){
                 placedPiece[0] = x;
                 placedPiece[1] = y;
                 moveWasACapture = false;
-                delay(750); //To prevent readBoardToArray being called while the piece is being placed
+                delay(500); //To prevent readBoardToArray being called while the piece is being placed
                 readBoardToArray();
                 return true;
             }
             if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
                 //If another piece is lifted, ie a capture
                 moveWasACapture = true;
-                delay(750); //To prevent readBoardToArray being called while the piece is being placed
+                delay(500); //To prevent readBoardToArray being called while the piece is being placed
                 readBoardToArray();
                 while(!pieceHasBeenPlaced()){}
                 //Depends on whether the user lifted the capturing or captured piece first
