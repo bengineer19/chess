@@ -71,34 +71,34 @@ void Chess::flashStartingRows(){
 
 }
 
-void Chess::squareLEDs(){
+void Chess::squareLEDs(int delayTime){
     for(activeSquareLEDCol = squareColStart; activeSquareLEDCol < squareColEnd; activeSquareLEDCol++){
         digitalWrite(activeSquareLEDCol, HIGH);
-        cycleRows();
+        cycleRows(delayTime);
 
         digitalWrite(activeSquareLEDCol, LOW);
     }
 }
 
-void Chess::pieceLEDs(){
+void Chess::pieceLEDs(int delayTime){
     for(activePieceLEDCol = pieceColStart; activePieceLEDCol < pieceColEnd; activePieceLEDCol++){
         digitalWrite(activePieceLEDCol, HIGH);
-        cycleRows();
+        cycleRows(delayTime);
 
         digitalWrite(activePieceLEDCol, LOW);
     }
 }
 
-void Chess::pieceLEDsStarting(){
+void Chess::pieceLEDsStarting(int delayTime){
     for(activeRow = rowStart; activeRow < 24; activeRow++){
         digitalWrite(activeRow, LOW);
-        cyclePieceLEDCols();
-            digitalWrite(activeRow, HIGH);
+        cyclePieceLEDCols(delayTime);
+        digitalWrite(activeRow, HIGH);
     }
 
     for(activeRow = 28; activeRow < rowEnd; activeRow++){
         digitalWrite(activeRow, LOW);
-        cyclePieceLEDCols();
+        cyclePieceLEDCols(delayTime);
         digitalWrite(activeRow, HIGH);
     }
 }
@@ -111,7 +111,7 @@ void Chess::oneLED(int column, int row, int pause){
     digitalWrite(row + 22, HIGH);
 }
 
-void Chess::cyclePieceLEDCols(){
+void Chess::cyclePieceLEDCols(int delayTime){
     for(activePieceLEDCol = pieceColStart; activePieceLEDCol < pieceColEnd; activePieceLEDCol++){
         digitalWrite(activePieceLEDCol, HIGH);
         delay(delayTime);
@@ -119,8 +119,16 @@ void Chess::cyclePieceLEDCols(){
     }
 }
 
-void Chess::cycleRows(){
+void Chess::cycleRows(int delayTime){
     for(activeRow = rowStart; activeRow < rowEnd; activeRow++){
+        digitalWrite(activeRow, LOW);
+        delay(delayTime);
+        digitalWrite(activeRow, HIGH);
+    }
+}
+
+void Chess::cycleRowsUp(int delayTime){
+    for(activeRow = rowEnd - 1; activeRow >= rowStart; activeRow--){
         digitalWrite(activeRow, LOW);
         delay(delayTime);
         digitalWrite(activeRow, HIGH);
@@ -224,33 +232,85 @@ void Chess::printBoardState(){
 }
 
 void Chess::waitForMove(){
-    //To prevent LED Gnds shorting with detection lines and ghosting pieces
-    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
-        pinMode(LEDGnd, OUTPUT);
-        digitalWrite(LEDGnd, LOW);
-    }
+    readBoardToArray();
 
     while(!pieceHasBeenLifted()){}
-    //while(!pieceHasBeenPlaced()){}
-    while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
+
+    //To prevent LED Gnds shorting with detection lines and ghosting pieces
+    LEDGndsLOW();
+
+    //while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
+    while(!liftedOrCaptured()){}
 
     //Turn LED Gnds back on
-    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
-        pinMode(LEDGnd, OUTPUT);
-        digitalWrite(LEDGnd, HIGH);
-    }
+    LEDGndsHIGH();
+
+    checkForShorts(65);
 }
 
 bool Chess::pieceHasBeenLifted(){
-    for (int x = 0; x < 8; x++)
+    for (int y = 0; y < 8; y++)
     {
-        for (int y = 0; y < 8; y++)
+        for (int x = 0; x < 8; x++)
         {
             if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
                 liftedPiece[0] = x;
                 liftedPiece[1] = y;
                 //Serial.println("lifted");
-                delay(1250);
+                delay(650);
+                readBoardToArray();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Chess::checkForShorts(int delayTime){
+    digitalWrite(46, HIGH);
+    cycleRows(delayTime);
+    cycleRowsUp(delayTime);
+    digitalWrite(46, LOW);
+}
+
+void Chess::LEDGndsLOW(){
+    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
+        digitalWrite(LEDGnd, LOW);
+    }
+}
+
+void Chess::LEDGndsHIGH(){
+    for(int LEDGnd = 22; LEDGnd < 30; LEDGnd++){
+        digitalWrite(LEDGnd, HIGH);
+    }
+}
+
+
+bool Chess::liftedOrCaptured(){
+    for (int x = 0; x < 8; x++)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            if(boardState[y][x] == false && pieceIsPresent(x,y)){
+                //If the piece is placed
+                placedPiece[0] = x;
+                placedPiece[1] = y;
+                moveWasACapture = false;
+                delay(750); //To prevent readBoardToArray being called while the piece is being placed
+                readBoardToArray();
+                return true;
+            }
+            if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
+                //If another piece is lifted, ie a capture
+                moveWasACapture = true;
+                delay(750); //To prevent readBoardToArray being called while the piece is being placed
+                readBoardToArray();
+                while(!pieceHasBeenPlaced()){}
+                //Depends on whether the user lifted the capturing or captured piece first
+                if(placedPiece[0] == liftedPiece[0] && placedPiece[1] == liftedPiece[1]){
+                    liftedPiece[0] = x;
+                    liftedPiece[1] = y;
+                }
                 readBoardToArray();
                 return true;
             }
@@ -260,6 +320,7 @@ bool Chess::pieceHasBeenLifted(){
 }
 
 bool Chess::pieceHasBeenPlaced(){
+
     for (int x = 0; x < 8; x++)
     {
         for (int y = 0; y < 8; y++)
@@ -267,24 +328,7 @@ bool Chess::pieceHasBeenPlaced(){
             if(boardState[y][x] == false && pieceIsPresent(x,y)){
                 placedPiece[0] = x;
                 placedPiece[1] = y;
-                delay(1250);
-                readBoardToArray();
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool Chess::pieceHasBeenCaptured(){
-    for (int y = 0; y < 8; y++)
-    {
-        for (int x = 0; x < 8; x++)
-        {
-            if(boardState[y][x] == true && pieceIsPresent(x,y) == false){
-                readBoardToArray();
-                while(!pieceHasBeenPlaced()){}
-                //Depends on whether the user lifted the capturing or captured piece first
+                delay(750); //To prevent readBoardToArray being called while the piece is being lifted
                 readBoardToArray();
                 return true;
             }
