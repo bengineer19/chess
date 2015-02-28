@@ -232,19 +232,20 @@ void Chess::printBoardState(){
 }
 
 void Chess::waitForMove(){
-    readBoardToArray();
+    while(liftedPiece[0] == placedPiece[0] && liftedPiece[1] == liftedPiece[1]){
+        readBoardToArray();
 
-    while(!pieceHasBeenLifted()){}
+        while(!pieceHasBeenLifted()){}
 
-    //To prevent LED Gnds shorting with detection lines and ghosting pieces
-    LEDGndsLOW();
+        //To prevent LED Gnds shorting with detection lines and ghosting pieces
+        LEDGndsLOW();
 
-    //while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
-    while(!liftedOrCaptured()){}
+        //while(!pieceHasBeenPlaced() && !pieceHasBeenCaptured()){}
+        while(!liftedOrCaptured()){}
 
-    //Turn LED Gnds back on
-    LEDGndsHIGH();
-
+        //Turn LED Gnds back on
+        LEDGndsHIGH();
+    }
     checkForShorts(65);
 }
 
