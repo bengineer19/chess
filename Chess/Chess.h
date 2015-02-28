@@ -7,8 +7,8 @@ class Chess{
     public:
         Chess();
         bool boardState [8][8];
-        int liftedPiece[2];
-        int placedPiece[2];
+        int liftedPiece[2] = {0,0}; //liftedPiece must be equal to placedPiece for waitForMove() to run
+        int placedPiece[2] = {0,0};
         bool moveWasACapture;
 
         void pieceLEDs(int delayTime);
