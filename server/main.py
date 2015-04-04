@@ -51,14 +51,25 @@ def sendMove(information):
 
 def handleData():
     sendMove(compileMessage(sys.argv[1]))
-    writeFile(addSlashesAndSpaces(sys.argv[2]))
+    writeFile(addSpaces(sys.argv[2]))
     time.sleep(1)
     print generateFEN(waitForMessage())
 
-try:
-    handleData()
+moveOk = False
+count = 0
 
-except Exception as e:
-    print "Error"
-    print e
-    #handleData()
+while not moveOk:
+    try:
+        handleData()
+        sendMove("ok")
+        moveOk = True
+
+    except Exception as e:
+        sendMove("error")
+        #print "Error"
+        #print e
+        count += 1
+        if count == 3:
+            print "Error: " + e
+            moveOk = True #It's not, but we have to break outta the loop
+
