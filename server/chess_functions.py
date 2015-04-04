@@ -2,29 +2,23 @@
 import chess
 
 def writeFile(info):
-    f = open("/var/www/latestWhiteMove.txt","w")
-    f.write(info)
+    f = open("/var/www/latestWhiteMove.txt","a")
+    f.write(info + "\n")
     f.close()
 
 def writeBoardFENToFile(info):
-    f = open("/var/www/latestBoardMove.txt","w")
-    f.write(info)
+    f = open("/var/www/latestBoardMove.txt","a")
+    f.write(info + "\n")
     f.close()
 
 def getFENFromFile():
     f = open("/var/www/latestWhiteMove.txt","r")
-    contents = f.read()
+    contents = f.readlines()[len(f.readlines()) - 1]
     f.close()
     return contents
 
-def addSlashesAndSpaces(message):
-    message = message.replace("s", "/")
-    message = message.replace("u", " ")
-    return message
-
-def removeSlashesAndSpaces(message):
-    message = message.replace("/", "s")
-    message = message.replace(" ", "u")
+def addSpaces(message):
+    message = message.replace("s", " ")
     return message
 
 letterArray = ["a", "b", "c", "d", "e", "f", "g", "h"]
