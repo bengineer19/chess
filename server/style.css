@@ -1,0 +1,16 @@
+h1 {
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+#board {
+    width: 525px;
+    padding-top: 0px;
+    margin-left: auto;
+    margin-right: auto;
+}
+#sideMenu {
+    float: left;
+    height: 50px;
+    margin-left: 20px;
+}
